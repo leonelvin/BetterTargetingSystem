@@ -21,3 +21,6 @@ Do not hesitate to give feedback/suggestion and submit bug reports on the Github
 
 \* Yes, TAB will now target those huge bosses without having to reorient the camera to get the center of their model in view  
 (DPS players might not understand why this is an issue).
+
+
+This plugin was originally made by @Lynesth.
