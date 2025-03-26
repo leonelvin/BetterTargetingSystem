@@ -34,19 +34,19 @@ public sealed unsafe class Plugin : IDalamudPlugin
     internal List<uint> CyclingTargets { get; private set; } = new List<uint>();
     internal DebugMode DebugMode { get; private set; }
 
-    private IDalamudPluginInterface PluginInterface { get; init; }
-    private ICommandManager CommandManager { get; init; }
-    private IFramework Framework { get; set; }
-    private IPluginLog PluginLog { get; init; }
+    [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
+    [PluginService] public static IFramework Framework { get; set; }
+    [PluginService] public static IPluginLog PluginLog { get; set; }
     public Configuration Configuration { get; init; }
 
-    [PluginService] internal static IClientState Client { get; set; } = null!;
-    [PluginService] private IObjectTable ObjectTable { get; set; } = null!;
-    [PluginService] private ITargetManager TargetManager { get; set; } = null!;
-    [PluginService] internal static IGameGui GameGui { get; set; } = null!;
-    [PluginService] private static IGameInteropProvider GameInteropProvider { get; set; } = null!;
-    [PluginService] internal static IKeyState KeyState { get; set; } = null!;
-    [PluginService] internal ICondition Condition { get; private set; }
+    [PluginService] public static IClientState Client { get; set; } = null!;
+    [PluginService] public static IObjectTable ObjectTable { get; set; } = null!;
+    [PluginService] public static ITargetManager TargetManager { get; set; } = null!;
+    [PluginService] public static IGameGui GameGui { get; set; } = null!;
+    [PluginService] public static IGameInteropProvider GameInteropProvider { get; set; } = null!;
+    [PluginService] public static IKeyState KeyState { get; set; } = null!;
+    [PluginService] public static ICondition Condition { get; set; } = null!;
 
     private ConfigWindow ConfigWindow { get; init; }
     private HelpWindow HelpWindow { get; init; }
@@ -57,22 +57,14 @@ public sealed unsafe class Plugin : IDalamudPlugin
     //internal static CanAttackDelegate? CanAttackFunction = null!;
     //internal delegate nint CanAttackDelegate(nint a1, nint objectAddress);
 
-    public Plugin(
-        IDalamudPluginInterface pluginInterface,
-        ICommandManager commandManager,
-        IPluginLog pluginLog,
-        IFramework framework)
+    public Plugin()
     {
         GameInteropProvider.InitializeFromAttributes(this);
 
-        this.PluginInterface = pluginInterface;
-        this.CommandManager = commandManager;
-        this.PluginLog = pluginLog;
 
-        this.Configuration = this.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-        this.Configuration.Initialize(this.PluginInterface);
+        this.Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        this.Configuration.Initialize(PluginInterface);
 
-        Framework = framework;
         Framework.Update += Update;
         Client.TerritoryChanged += ClearLists;
 
@@ -82,13 +74,13 @@ public sealed unsafe class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(HelpWindow);
 
         this.DebugMode = new DebugMode(this);
-        this.PluginInterface.UiBuilder.Draw += DrawUI;
-        this.PluginInterface.UiBuilder.OpenMainUi += DrawHelpUI;
-        this.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+        PluginInterface.UiBuilder.Draw += DrawUI;
+        PluginInterface.UiBuilder.OpenMainUi += DrawHelpUI;
+        PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
 
-        this.CommandManager.AddHandler(CommandConfig, new CommandInfo(ShowConfigWindow)
+        CommandManager.AddHandler(CommandConfig, new CommandInfo(ShowConfigWindow)
             { HelpMessage = "Open the configuration window." });
-        this.CommandManager.AddHandler(CommandHelp, new CommandInfo(ShowHelpWindow)
+        CommandManager.AddHandler(CommandHelp, new CommandInfo(ShowHelpWindow)
             { HelpMessage = "What does this plugin do?" });
     }
 
@@ -96,8 +88,8 @@ public sealed unsafe class Plugin : IDalamudPlugin
     {
         Framework.Update -= Update;
         Client.TerritoryChanged -= ClearLists;
-        this.CommandManager.RemoveHandler(CommandConfig);
-        this.CommandManager.RemoveHandler(CommandHelp);
+        CommandManager.RemoveHandler(CommandConfig);
+        CommandManager.RemoveHandler(CommandHelp);
         this.WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
         HelpWindow.Dispose();
@@ -165,7 +157,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
         }
     }
 
-    private void SetTarget(DalamudGameObject? target)
+    private void SetTarget(DalamudGameObject target)
     {
         TargetManager.SoftTarget = null;
         TargetManager.Target = target;
@@ -392,7 +384,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
             if (o->GetIsTargetable() == false) continue;
 
             // If the object is part of another party's treasure hunt/leve, we ignore it
-            if ((o->EventId.ContentId == EventHandlerType.TreasureHuntDirector || o->EventId.ContentId == EventHandlerType.BattleLeveDirector)
+            if ((o->EventId.ContentId == EventHandlerContent.TreasureHuntDirector || o->EventId.ContentId == EventHandlerContent.BattleLeveDirector)
                 && o->EventId.Id != Player->EventId.Id)
                 continue;
 
