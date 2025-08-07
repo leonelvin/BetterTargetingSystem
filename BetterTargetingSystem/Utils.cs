@@ -40,14 +40,15 @@ public unsafe class Utils
     internal unsafe static float GetCameraRotation()
     {
         // Gives the camera rotation in deg between -180 and 180
-        var cameraRotation = AreaMapNumberArray.Instance()->ConeRotation;
+        var cameraRotation = AreaMapNumberArray.Instance()->PlayerRotation;
 
         // Transform the [-180,180] rotation to rad with same 0 as a GameObject rotation
         // There might be an easier way to do that, but geometry and I aren't friends
         var sign = Math.Sign(cameraRotation) == -1 ? -1 : 1;
         var rotation = (float)((Math.Abs(cameraRotation * (Math.PI / 180)) - Math.PI) * sign);
 
-        return rotation;
+        // DO NOT ASK WHY.
+        return rotation +135;
     }
 
     internal static bool IsInFrontOfCamera(DalamudGameObject obj, float maxAngle)
