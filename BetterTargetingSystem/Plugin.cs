@@ -21,6 +21,7 @@ using DalamudGameObject = Dalamud.Game.ClientState.Objects.Types.IGameObject;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 using GameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using Dalamud.Bindings.ImGui;
 
 namespace BetterTargetingSystem;
 
@@ -123,7 +124,7 @@ public sealed unsafe class Plugin : IDalamudPlugin
             return;
 
         // Disable if keyboard is being used to type text
-        if (Utils.IsTextInputActive || ImGuiNET.ImGui.GetIO().WantCaptureKeyboard)
+        if (Utils.IsTextInputActive || ImGui.GetIO().WantCaptureKeyboard)
             return;
 
         Keybinds.Keybind.GetKeyboardState();

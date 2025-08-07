@@ -9,6 +9,7 @@ using CSFramework = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework;
 using System.Collections.Generic;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI.Arrays;
 
 namespace BetterTargetingSystem;
 
@@ -36,10 +37,10 @@ public unsafe class Utils
         return distance;
     }
 
-    internal static float GetCameraRotation()
+    internal unsafe static float GetCameraRotation()
     {
         // Gives the camera rotation in deg between -180 and 180
-        var cameraRotation = RaptureAtkModule->AtkModule.AtkArrayDataHolder.NumberArrays[24]->IntArray[3];
+        var cameraRotation = AreaMapNumberArray.Instance()->ConeRotation;
 
         // Transform the [-180,180] rotation to rad with same 0 as a GameObject rotation
         // There might be an easier way to do that, but geometry and I aren't friends
@@ -105,7 +106,7 @@ public unsafe class Utils
         if (addonByName == IntPtr.Zero)
             return Array.Empty<uint>();
 
-        var addon = (AddonEnemyList*)addonByName;
+        var addon = (AddonEnemyList*)addonByName.Address;
         var numArray = RaptureAtkModule->AtkModule.AtkArrayDataHolder.NumberArrays[21];
         var list = new List<uint>(addon->EnemyCount);
         for (var i = 0; i < addon->EnemyCount; i++)
